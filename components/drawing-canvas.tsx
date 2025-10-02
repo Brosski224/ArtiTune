@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useRef, useState, useEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button"
-import { Play, Square, Trash2, Save, FolderOpen } from "lucide-react"
+import { Play, Square, Trash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { AudioEngine } from "@/lib/audio-engine"
 
@@ -252,7 +252,7 @@ export function DrawingCanvas() {
     <div className="flex min-h-screen flex-col">
       <header className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between px-4">
-          <h1 className="text-2xl font-bold text-primary">SoundDraw</h1>
+          <h1 className="text-2xl font-bold text-primary">ArtiTune</h1>
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">
               {strokes.length} {strokes.length === 1 ? "stroke" : "strokes"}
@@ -276,8 +276,8 @@ export function DrawingCanvas() {
           />
 
           {isReplaying && (
-            <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-background/50 backdrop-blur-sm">
-              <div className="text-lg font-medium text-primary">Replaying...</div>
+            <div className="absolute top-4 left-4 rounded-md bg-background/80 px-3 py-2">
+              <div className="text-sm font-medium text-primary">Replaying...</div>
             </div>
           )}
         </div>
@@ -306,7 +306,7 @@ export function DrawingCanvas() {
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center justify-center gap-3">
+        <div className="flex flex-wrap items-center justify-center gap-4">
           <Button onClick={handleReplay} disabled={strokes.length === 0 || isReplaying} size="lg" className="gap-2">
             <Play className="h-4 w-4" />
             Replay
@@ -327,9 +327,9 @@ export function DrawingCanvas() {
             <Trash2 className="h-4 w-4" />
             Clear
           </Button>
-
         </div>
       </div>
     </div>
   )
 }
+        

@@ -33,30 +33,57 @@ A creative drawing-to-sound application that transforms your artistic strokes in
 
 - Node.js (version 16 or higher)
 - npm or yarn package manager
+- Git
 
 ### Installation
 
-1. Clone the repository:
+#### Option 1: Clone from existing repository
 ```bash
-git clone <repository-url>
+git clone <your-repository-url>
 cd artitune
 ```
 
-2. Install dependencies:
+#### Option 2: Set up from local directory
+If you're starting from this local project:
+
+1. Initialize git repository (if not already done):
+```bash
+git init
+```
+
+2. Create a new repository on GitHub/GitLab and add it as remote:
+```bash
+git remote add origin <your-repository-url>
+```
+
+3. Add and commit files:
+```bash
+git add .
+git commit -m "Initial commit"
+```
+
+4. Push to remote repository:
+```bash
+git push -u origin main
+```
+
+#### Continue with setup:
+
+5. Install dependencies:
 ```bash
 npm install
 # or
 yarn install
 ```
 
-3. Run the development server:
+6. Run the development server:
 ```bash
 npm run dev
 # or
 yarn dev
 ```
 
-4. Open [http://localhost:3000](http://localhost:3000) in your browser
+7. Open [http://localhost:3000](http://localhost:3000) in your browser
 
 ## How to Use
 
@@ -66,6 +93,25 @@ yarn dev
 4. **Replay**: Click the "Replay" button to watch your entire composition recreated with audio
 5. **Clear**: Use the "Clear" button to start fresh
 6. **Stop**: Stop any ongoing replay with the "Stop" button
+
+## Git Setup Commands
+
+If you encounter the error "fatal: 'origin' does not appear to be a git repository":
+
+1. Check current remotes:
+```bash
+git remote -v
+```
+
+2. Add your repository as origin:
+```bash
+git remote add origin https://github.com/yourusername/artitune.git
+```
+
+3. Push to set upstream:
+```bash
+git push -u origin main
+```
 
 ## Project Structure
 
