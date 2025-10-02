@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Drawing App with Replay</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 20px;
+    }
+
+    .container {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 20px;
+      font-size: 24px;
+    }
+
+    canvas {
+      border: 2px solid #667eea;
+      border-radius: 8px;
+      cursor: crosshair;
+      display: block;
+      background: white;
+      touch-action: none;
+    }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+      justify-content: center;
+    }
+
+    button {
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: white;
+    }
+
+    .replay-btn {
+      background: #667eea;
+    }
+
+    .replay-btn:hover {
+      background: #5568d3;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .replay-btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .clear-btn {
+      background: #ef4444;
+    }
+
+    .clear-btn:hover {
+      background: #dc2626;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+    }
+
+    .status {
+      text-align: center;
+      margin-top: 12px;
+      color: #666;
+      font-size: 14px;
+      min-height: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>✏️ Drawing App with Replay</h1>
+    <canvas id="drawingCanvas" width="600" height="400"></canvas>
+    <div class="controls">
+      <button class="replay-btn" id="replayBtn">🔄 Replay</button>
+      <button class="clear-btn" id="clearBtn">🗑️ Clear</button>
+    </div>
+    <div class="status" id="status"></div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('drawingCanvas');
+    const ctx = canvas.getContext('2d');
+    const replayBtn = document.getElementById('replayBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const status = document.getElementById('status');
+
+    // Drawing state
+    let isDrawing = false;
+    let strokes = []; // Array of strokes
+    let currentStroke = []; // Current stroke being drawn
+    let startTime = null;
+    let isReplaying = false;
+
+    // Configure canvas context
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.strokeStyle = '#333';
+
+    // Mouse event handlers
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('mouseleave', stopDrawing);
+
+    function startDrawing(e) {
+      if (isReplaying) return;
+      
+      isDrawing = true;
+      if (!startTime) startTime = Date.now();
+      
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      
+      currentStroke = [{
+        x,
+        y,
+        time: Date.now() - startTime
+      }];
+      
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+    }
+
+    function draw(e) {
+      if (!isDrawing || isReplaying) return;
+      
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      
+      currentStroke.push({
+        x,
+        y,
+        time: Date.now() - startTime
+      });
+      
+      ctx.lineTo(x, y);
+      ctx.stroke();
+    }
+
+    function stopDrawing() {
+      if (!isDrawing) return;
+      
+      isDrawing = false;
+      
+      if (currentStroke.length > 0) {
+        strokes.push([...currentStroke]);
+        currentStroke = [];
+        updateStatus();
+      }
+    }
+
+    // Replay functionality
+    async function replayDrawing() {
+      if (strokes.length === 0) {
+        status.textContent = 'Nothing to replay! Draw something first.';
+        return;
+      }
+      
+      isReplaying = true;
+      replayBtn.disabled = true;
+      clearBtn.disabled = true;
+      
+      // Clear canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      status.textContent = 'Replaying...';
+      
+      // Replay each stroke
+      for (let strokeIndex = 0; strokeIndex < strokes.length; strokeIndex++) {
+        const stroke = strokes[strokeIndex];
+        
+        ctx.beginPath();
+        ctx.moveTo(stroke[0].x, stroke[0].y);
+        
+        // Draw each point in the stroke
+        for (let i = 1; i < stroke.length; i++) {
+          const prevPoint = stroke[i - 1];
+          const currentPoint = stroke[i];
+          const delay = currentPoint.time - prevPoint.time;
+          
+          // Wait for the time difference between points
+          await new Promise(resolve => setTimeout(resolve, Math.min(delay, 50)));
+          
+          ctx.lineTo(currentPoint.x, currentPoint.y);
+          ctx.stroke();
+        }
+        
+        // Small pause between strokes
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+      
+      status.textContent = 'Replay complete!';
+      isReplaying = false;
+      replayBtn.disabled = false;
+      clearBtn.disabled = false;
+      
+      setTimeout(() => updateStatus(), 2000);
+    }
+
+    // Clear canvas and reset
+    function clearCanvas() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      strokes = [];
+      currentStroke = [];
+      startTime = null;
+      updateStatus();
+    }
+
+    function updateStatus() {
+      if (strokes.length === 0) {
+        status.textContent = 'Start drawing on the canvas!';
+      } else {
+        status.textContent = `${strokes.length} stroke${strokes.length !== 1 ? 's' : ''} recorded`;
+      }
+    }
+
+    // Button event listeners
+    replayBtn.addEventListener('click', replayDrawing);
+    clearBtn.addEventListener('click', clearCanvas);
+
+    // Initial status
+    updateStatus();
+  </script>
+</body>
+</html>
